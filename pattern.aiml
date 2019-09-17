@@ -1,0 +1,90 @@
+<aiml version="1.0.1" encoding="UTF-8">
+
+    <category>
+        <pattern>#SBV#POB#</pattern>
+        <template>
+            task_SBV_POB
+        </template>
+    </category>
+
+    <category>
+        <pattern>#SBV#VOB#</pattern>
+        <template>
+            task_SBV_VOB
+        </template>
+    </category>
+
+    <category>
+        <pattern>#SBV#ATT#VOB#</pattern>
+        <template>
+            task_SBV_ATT_VOB
+        </template>
+    </category>
+
+    <category>
+        <pattern>#SBV#ATT#POB#</pattern>
+        <template>
+            task_SBV_ATT_POB
+        </template>
+    </category>
+
+    <category>
+        <pattern>#SBV#ADV#</pattern>
+        <template>
+            task_SBV_ADV
+        </template>
+    </category>
+
+    <category>
+        <pattern>#SBV#VOB#COO#</pattern>
+        <template>
+            task_SBV_VOB_COO
+        </template>
+    </category>
+
+    <!--
+    <category>
+        <pattern>#SBV#HED#POB#</pattern>
+        <template>
+            1
+        </template>
+    </category>
+
+    <category>
+        <pattern>SBV#HED#VOB</pattern>
+        <template>
+            1
+        </template>
+    </category>
+
+    <category>
+        <pattern>#SBV#HED#ATT#VOB#</pattern>
+        <template>
+            1
+        </template>
+    </category>
+
+    <category>
+        <pattern>#SBV#HED#ATT#POB#</pattern>
+        <template>
+            1
+        </template>
+    </category>
+
+    <category>
+        <pattern>#SBV#ADV#HED#</pattern>
+        <template>
+            2
+        </template>
+    </category>
+
+    <category>
+        <pattern>#SBV#HED#VOB#COO#</pattern>
+        <template>
+            2
+        </template>
+    </category>
+    -->
+
+
+</aiml>
