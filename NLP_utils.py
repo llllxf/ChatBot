@@ -5,7 +5,10 @@ import sys
 project_path = os.path.abspath(os.path.join(os.getcwd(), ".."))
 sys.path.append(project_path)
 from pyltp import Segmentor, Postagger, Parser, NamedEntityRecognizer
-
+import jieba
+import jieba.posseg as psg
+from gensim import corpora, models, similarities
+from cbot import CilinSimilarity
 
 class NLPUtil(object):
 
@@ -13,6 +16,7 @@ class NLPUtil(object):
     def __init__(cls, model_path):
 
         cls.model_path = model_path
+        cls.cilin = CilinSimilarity()
 
         """
         分词
@@ -34,6 +38,7 @@ class NLPUtil(object):
         疑问代词
         """
         cls.Interrogative_pronouns = ['哪里','什么','怎么','哪','为什么','啥']
+        cls.noun = ['n','nh','ni','nl','ns','nz','nt','i']
 
     """
     :describe 分词
@@ -41,7 +46,7 @@ class NLPUtil(object):
     """
     @classmethod
     def cut_sentence(cls, sentence):
-        words = cls.segmentor.segment(sentence)
+        words = list(jieba.cut(sentence))
         return words
 
     """
@@ -64,6 +69,51 @@ class NLPUtil(object):
         return parse
 
     """
+    :describe 词汇相似度计算
+    :arg word 代匹配的词
+    entity 匹配的词列表
+    
+    """
+    @classmethod
+    def get_similarity(cls, word, entity):
+        #print(word)
+        #print(entity)
+
+        for sub_attr in entity:
+            if word in sub_attr or sub_attr in word:
+                return sub_attr
+            e = 0
+            for w in range(len(word)):
+                if word[w] == sub_attr[e]:
+                    e = e+1
+                    if e == len(sub_attr):
+                        return sub_attr
+            w = 0
+            for e in range(len(sub_attr)):
+                if sub_attr[e] == word[w]:
+                    w = w+1
+                    if w == len(word):
+                        return sub_attr
+
+        for sub_attr in entity:
+
+            attr_arr = jieba.cut(sub_attr)
+            #print(list(attr_arr))
+            max_score = 0
+            max_attr = ""
+            for a in attr_arr:
+                print(word,a,attr_arr)
+                score = cls.cilin.sim2016(word, a)
+                #print(word, a, score)
+                if score > max_score:
+                    max_score = score
+                    max_attr = sub_attr
+                    #print(max_score,a,max_attr)
+            if max_score > 0.8:
+                return max_attr
+
+
+    """
     :describe 
     得到问题对应的模版
     1.先对问题分词
@@ -78,19 +128,27 @@ class NLPUtil(object):
         postags = cls.get_postag(words)
         arcs = cls.parser.parse(words, postags)
         arcs_dict = cls._build_sub_dicts(words,arcs)
-        #print(arcs[1].head,arcs[1].relation)
+        hed_index = 0
+
+        #for i in range(len(words)):
+        #    print(words[i],postags[i],arcs_dict[i])
         pattern = ""
+        for i in range(len(arcs)):
+            sub_arc = arcs[i]
+            if sub_arc.relation == 'HED':
+                hed_index = i
+
         for i in range(len(words)):
-            #print("i",i)
+            if i == hed_index:
+                pattern += 'HED'
             for sub_dict in arcs_dict:
                 keys = sub_dict.keys()
                 for k in keys:
-                   #print("k and sub_dict[k]",k,sub_dict[k])
                     if i in sub_dict[k]:
                         pattern += k
-                        #print("i,pattern",i,pattern)
                         break
-        return words,pattern,arcs_dict,postags
+        #print(pattern)
+        return words,pattern,arcs_dict,postags,hed_index
 
     @classmethod
     def extract(self, sentence):
@@ -170,9 +228,9 @@ class NLPUtil(object):
     """
     :decription: 为句子中的每个词语维护一个保存句法依存儿子节点的字典
     :args:
-        words: 分词列表
-        postags: 词性列表
-        arcs: 句法依存列表
+    words: 分词列表
+    postags: 词性列表
+    arcs: 句法依存列表
     """
 
     @classmethod
